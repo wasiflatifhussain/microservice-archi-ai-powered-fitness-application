@@ -15,4 +15,5 @@
 - Google Gemini API
 - Spring Cloud Config Server
 
-<img width="1050" height="531" alt="Screenshot 2025-09-06 at 10 48 21 PM" src="https://github.com/user-attachments/assets/dc8a0ffe-75a8-4c7d-9f8f-845be4a7a1b8" />
+<img width="1050" height="531" alt="Screenshot 2025-09-06 at 10 48 21 PM" src="https://github.com/user-attachments/assets/ed0cd9de-00b1-4b6d-845d-19da84cda52e" />
+
