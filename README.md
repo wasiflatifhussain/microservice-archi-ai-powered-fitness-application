@@ -16,4 +16,4 @@
 - Spring Cloud Config Server
 
 <img width="1050" height="531" alt="Screenshot 2025-09-06 at 10 48 21 PM" src="https://github.com/user-attachments/assets/ed0cd9de-00b1-4b6d-845d-19da84cda52e" />
-
+<img width="1294" height="650" alt="Screenshot 2025-09-06 at 11 17 29 PM" src="https://github.com/user-attachments/assets/0b06f0f3-77be-4a53-9720-5ea1ccacd8e5" />
