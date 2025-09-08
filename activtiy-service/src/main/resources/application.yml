@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: activity-service
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/fitness-microservice-activity-service
+      database: fitness-microservice-activity-service
+
+
+server:
+  port: 8082
