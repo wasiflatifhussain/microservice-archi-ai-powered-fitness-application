@@ -1,4 +1,4 @@
-package com.fitness.activtiy_service.port;
+package com.fitness.activtiy_service.client.user;
 
 import reactor.core.publisher.Mono;
 
