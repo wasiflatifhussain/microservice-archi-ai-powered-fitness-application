@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 @Slf4j
 public class UserService {
-  private UserRepository userRepository;
+  private final UserRepository userRepository;
 
   public UserResponse register(@Valid RegisterRequest request) {
     log.info("Starting user registration process for email={}", request.getEmail());
@@ -48,31 +48,39 @@ public class UserService {
     log.info("Retrieving user profile for userId={}", userId);
 
     try {
-      User user =
-          userRepository
-              .findById(userId)
-              .orElseThrow(
-                  () -> {
-                    log.warn("User profile not found: userId={}", userId);
-                    return new RuntimeException("User not found with id: " + userId);
-                  });
+      User user = userRepository.findById(userId).orElse(null);
 
-      log.debug(
+      if (user == null) {
+        log.warn("User profile not found: userId={}", userId);
+        return null;
+      }
+
+      log.info(
           "Successfully retrieved user profile: userId={}, email={}",
           user.getId(),
           user.getEmail());
       return mapToUserResponse(user);
     } catch (Exception e) {
-      if (e.getMessage().contains("User not found")) {
-        throw e; // Re-throw user not found exception
-      }
-      log.error("Unexpected error retrieving user profile: userId={}", userId, e);
-      throw new RuntimeException("Failed to retrieve user profile", e);
+      log.error("Database error retrieving user profile: userId={}", userId, e);
+      throw new RuntimeException("Failed to retrieve user profile due to system error", e);
+    }
+  }
+
+  public Boolean existByUserId(String userId) {
+    log.info("Checking if user exists: userId={}", userId);
+
+    try {
+      Boolean exists = userRepository.existsById(userId);
+      log.info("User existence check result: userId={}, exists={}", userId, exists);
+      return exists;
+    } catch (Exception e) {
+      log.error("Error checking user existence: userId={}", userId, e);
+      return false;
     }
   }
 
   private UserResponse mapToUserResponse(User user) {
-    log.debug("Mapping user entity to response: userId={}", user.getId());
+    log.info("Mapping user entity to response: userId={}", user.getId());
     return UserResponse.builder()
         .id(user.getId())
         .email(user.getEmail())
@@ -81,18 +89,5 @@ public class UserService {
         .createdAt(user.getCreatedAt())
         .updatedAt(user.getUpdatedAt())
         .build();
-  }
-
-  public Boolean existByUserId(String userId) {
-    log.debug("Checking if user exists: userId={}", userId);
-
-    try {
-      Boolean exists = userRepository.existsById(userId);
-      log.debug("User existence check result: userId={}, exists={}", userId, exists);
-      return exists;
-    } catch (Exception e) {
-      log.error("Error checking user existence: userId={}", userId, e);
-      return false;
-    }
   }
 }

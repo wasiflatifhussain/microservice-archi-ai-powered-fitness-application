@@ -12,9 +12,9 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Entity
 @Table(name = "users")
 @Data
-@AllArgsConstructor // Generate constructor with all fields
-@NoArgsConstructor // Generate no-args constructor
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class User {
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)

@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 @Service
 @AllArgsConstructor
 public class ActivityService {
-  private ActivityRepository activityRepository;
+  private final ActivityRepository activityRepository;
   private UserServiceClient
       userServiceClient; // use interface rather than adapter impl - adapter called auto by Spring
 
@@ -25,8 +25,7 @@ public class ActivityService {
       Boolean userExists = userServiceClient.validateUser(activityRequest.getUserId()).block();
       if (userExists == null || !userExists) {
         log.warn("User validation failed for userId={}", activityRequest.getUserId());
-        throw new IllegalArgumentException(
-            "User does not exist with ID: " + activityRequest.getUserId());
+        return null;
       }
       log.info("User validated successfully for userId={}", activityRequest.getUserId());
 
@@ -53,18 +52,39 @@ public class ActivityService {
   public ActivityResponse getActivityById(String activityId) {
     log.info("getActivityById called for activityId={}", activityId);
     try {
-      Activity activity =
-          activityRepository
-              .findById(activityId)
-              .orElseThrow(() -> new RuntimeException("Activity not found with id: " + activityId));
+      Activity activity = activityRepository.findById(activityId).orElse(null);
+      if (activity == null) {
+        log.warn("Activity not found for activityId={}", activityId);
+        return null;
+      }
       log.info("Activity found successfully for activityId={}", activityId);
       return mapToActivityResponse(activity);
-    } catch (RuntimeException e) {
-      if (e.getMessage().contains("Activity not found")) {
-        log.warn("Activity not found for activityId={}", activityId);
-      } else {
-        log.error("Error occurred while fetching activity for activityId={}", activityId, e);
+    } catch (Exception e) {
+      log.error("Database error while fetching activity for activityId={}", activityId, e);
+      throw e;
+    }
+  }
+
+  public List<ActivityResponse> getActivitiesByUserId(String userId) {
+    log.info("getActivitiesByUserId called for userId={}", userId);
+    try {
+      Boolean userExists = userServiceClient.validateUser(userId).block();
+      if (userExists == null || !userExists) {
+        log.warn("User validation failed for userId={}", userId);
+        return null; // Return null for invalid user
       }
+      log.info("User validated successfully for userId={}", userId);
+
+      List<Activity> activities = activityRepository.findByUserId(userId);
+      if (activities.isEmpty()) {
+        log.warn("No activities found for userId={}", userId);
+        return List.of();
+      }
+
+      log.info("Found {} activities for userId={}", activities.size(), userId);
+      return activities.stream().map(this::mapToActivityResponse).collect(Collectors.toList());
+    } catch (Exception e) {
+      log.error("System error while getting activities for userId={}", userId, e);
       throw e;
     }
   }
@@ -81,28 +101,5 @@ public class ActivityService {
         .createdAt(activity.getCreatedAt())
         .updatedAt(activity.getUpdatedAt())
         .build();
-  }
-
-  public List<ActivityResponse> getActivitiesByUserId(String userId) {
-    log.info("getActivitiesByUserId called for userId={}", userId);
-    try {
-      Boolean userExists = userServiceClient.validateUser(userId).block();
-      if (userExists == null || !userExists) {
-        log.warn("User validation failed for userId={}", userId);
-        throw new IllegalArgumentException("User does not exist with ID: " + userId);
-      }
-      log.info("User validated successfully for userId={}", userId);
-
-      List<Activity> activities = activityRepository.findByUserId(userId);
-      if (activities.isEmpty()) {
-        log.warn("No activities found for userId={}", userId);
-        throw new IllegalArgumentException("No activities found for user: " + userId);
-      }
-      log.info("Found {} activities for userId={}", activities.size(), userId);
-      return activities.stream().map(this::mapToActivityResponse).collect(Collectors.toList());
-    } catch (Exception e) {
-      log.error("Error occurred while getting activities for userId={}", userId, e);
-      throw e;
-    }
   }
 }
