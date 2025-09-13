@@ -2,10 +2,8 @@ package com.fitness.activity_service.model;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -15,8 +13,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @Document(collection = "activities")
 @Data
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
+// @AllArgsConstructor  // no need; use AllArgs in obj who need constructor replacement
 public class Activity {
   @Id private String id;
   private String userId;

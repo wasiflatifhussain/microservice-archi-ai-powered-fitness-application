@@ -1,5 +1,6 @@
 package com.fitness.activity_service.client.user;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -7,13 +8,10 @@ import reactor.core.publisher.Mono;
 
 @Component
 @Slf4j
+@AllArgsConstructor
 public class UserServiceClientImpl implements UserServiceClient {
 
   private final WebClient userServiceWebClient;
-
-  public UserServiceClientImpl(WebClient userServiceWebClient) {
-    this.userServiceWebClient = userServiceWebClient;
-  }
 
   @Override
   public Mono<Boolean> validateUser(String userId) {

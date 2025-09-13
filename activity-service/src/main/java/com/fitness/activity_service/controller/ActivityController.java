@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 public class ActivityController {
 
-  private ActivityService activityService;
+  private final ActivityService activityService;
 
   @GetMapping("/{activityId}")
   public ResponseEntity<ActivityResponse> getActivity(@PathVariable String activityId) {

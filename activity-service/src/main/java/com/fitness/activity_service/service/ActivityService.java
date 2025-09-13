@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 @Service
 @AllArgsConstructor
 public class ActivityService {
-  private ActivityRepository activityRepository;
+  private final ActivityRepository activityRepository;
   private UserServiceClient
       userServiceClient; // use interface rather than adapter impl - adapter called auto by Spring
 
