@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 public class UserController {
 
-  private UserService userService;
+  private final UserService userService;
 
   @GetMapping("/{userId}")
   public ResponseEntity<UserResponse> getUserProfile(@PathVariable String userId) {

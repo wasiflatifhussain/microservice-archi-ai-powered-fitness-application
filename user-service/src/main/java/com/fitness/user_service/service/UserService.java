@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 @Slf4j
 public class UserService {
-  private UserRepository userRepository;
+  private final UserRepository userRepository;
 
   public UserResponse register(@Valid RegisterRequest request) {
     log.info("Starting user registration process for email={}", request.getEmail());
@@ -57,7 +57,7 @@ public class UserService {
                     return new RuntimeException("User not found with id: " + userId);
                   });
 
-      log.debug(
+      log.info(
           "Successfully retrieved user profile: userId={}, email={}",
           user.getId(),
           user.getEmail());
@@ -72,7 +72,7 @@ public class UserService {
   }
 
   private UserResponse mapToUserResponse(User user) {
-    log.debug("Mapping user entity to response: userId={}", user.getId());
+    log.info("Mapping user entity to response: userId={}", user.getId());
     return UserResponse.builder()
         .id(user.getId())
         .email(user.getEmail())
@@ -84,11 +84,11 @@ public class UserService {
   }
 
   public Boolean existByUserId(String userId) {
-    log.debug("Checking if user exists: userId={}", userId);
+    log.info("Checking if user exists: userId={}", userId);
 
     try {
       Boolean exists = userRepository.existsById(userId);
-      log.debug("User existence check result: userId={}, exists={}", userId, exists);
+      log.info("User existence check result: userId={}, exists={}", userId, exists);
       return exists;
     } catch (Exception e) {
       log.error("Error checking user existence: userId={}", userId, e);
