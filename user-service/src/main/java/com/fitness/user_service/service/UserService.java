@@ -48,14 +48,12 @@ public class UserService {
     log.info("Retrieving user profile for userId={}", userId);
 
     try {
-      User user =
-          userRepository
-              .findById(userId)
-              .orElseThrow(
-                  () -> {
-                    log.warn("User profile not found: userId={}", userId);
-                    return new RuntimeException("User not found with id: " + userId);
-                  });
+      User user = userRepository.findById(userId).orElse(null);
+
+      if (user == null) {
+        log.warn("User profile not found: userId={}", userId);
+        return null;
+      }
 
       log.info(
           "Successfully retrieved user profile: userId={}, email={}",
@@ -63,24 +61,9 @@ public class UserService {
           user.getEmail());
       return mapToUserResponse(user);
     } catch (Exception e) {
-      if (e.getMessage().contains("User not found")) {
-        throw e; // Re-throw user not found exception
-      }
-      log.error("Unexpected error retrieving user profile: userId={}", userId, e);
-      throw new RuntimeException("Failed to retrieve user profile", e);
+      log.error("Database error retrieving user profile: userId={}", userId, e);
+      throw new RuntimeException("Failed to retrieve user profile due to system error", e);
     }
-  }
-
-  private UserResponse mapToUserResponse(User user) {
-    log.info("Mapping user entity to response: userId={}", user.getId());
-    return UserResponse.builder()
-        .id(user.getId())
-        .email(user.getEmail())
-        .firstName(user.getFirstName())
-        .lastName(user.getLastName())
-        .createdAt(user.getCreatedAt())
-        .updatedAt(user.getUpdatedAt())
-        .build();
   }
 
   public Boolean existByUserId(String userId) {
@@ -94,5 +77,17 @@ public class UserService {
       log.error("Error checking user existence: userId={}", userId, e);
       return false;
     }
+  }
+
+  private UserResponse mapToUserResponse(User user) {
+    log.info("Mapping user entity to response: userId={}", user.getId());
+    return UserResponse.builder()
+        .id(user.getId())
+        .email(user.getEmail())
+        .firstName(user.getFirstName())
+        .lastName(user.getLastName())
+        .createdAt(user.getCreatedAt())
+        .updatedAt(user.getUpdatedAt())
+        .build();
   }
 }
