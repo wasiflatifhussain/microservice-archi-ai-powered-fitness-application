@@ -7,24 +7,33 @@ import com.fitness.activity_service.model.Activity;
 import com.fitness.activity_service.repository.ActivityRepository;
 import java.util.List;
 import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ActivityService {
   private final ActivityRepository activityRepository;
-  private UserServiceClient
+  private final UserServiceClient
       userServiceClient; // use interface rather than adapter impl - adapter called auto by Spring
+  private final RabbitTemplate rabbitTemplate;
+
+  @Value("${rabbitmq.exchange.name}")
+  private String exchange;
+
+  @Value("${rabbitmq.routing.key}")
+  private String routingKey;
 
   public ActivityResponse trackActivity(ActivityRequest activityRequest) {
     log.info("trackActivity called for userId={}", activityRequest.getUserId());
     try {
       Boolean userExists = userServiceClient.validateUser(activityRequest.getUserId()).block();
       if (userExists == null || !userExists) {
-        log.warn("User validation failed for userId={}", activityRequest.getUserId());
+        log.error("User validation failed for userId={}", activityRequest.getUserId());
         return null;
       }
       log.info("User validated successfully for userId={}", activityRequest.getUserId());
@@ -41,6 +50,14 @@ public class ActivityService {
       Activity savedActivity = activityRepository.save(activity);
       log.info("Activity saved successfully with activityId={}", savedActivity.getId());
 
+      // publish to RabbitMQ for AI Processing
+      try {
+        rabbitTemplate.convertAndSend(exchange, routingKey, savedActivity);
+        log.info("Published activity to RabbitMQ for activityId={}", savedActivity.getId());
+      } catch (Exception e) {
+        log.error(
+            "Failed to publish activity to RabbitMQ for activityId={}", savedActivity.getId(), e);
+      }
       return mapToActivityResponse(savedActivity);
     } catch (Exception e) {
       log.error(

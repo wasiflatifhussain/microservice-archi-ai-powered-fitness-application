@@ -15,3 +15,7 @@ The Activity Service follows a layered architecture consisting of the following 
 5. **Configuration Layer**: Manages application configuration and environment settings
 7. **Client Layer**: Provides client interfaces and implementations for external service interactions
 8. **Dto Layer**: Contains Data Transfer Objects for transferring data between layers
+
+## Rabbit MQ Integration
+
+Uses Rabbit MQ to store the created activities in a queue for further processing

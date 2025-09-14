@@ -5,6 +5,9 @@ spring:
     mongodb:
       uri: mongodb://localhost:27017/fitness-microservice-activity-service
       database: fitness-microservice-activity-service
+  output:
+    ansi:
+      enabled: ALWAYS
 
 server:
   port: 8082
@@ -13,3 +16,11 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+
+rabbitmq:
+  exchange:
+    name: fitness.exchange
+  queue:
+    name: activity.queue
+  routing:
+    key: activity.tracking
