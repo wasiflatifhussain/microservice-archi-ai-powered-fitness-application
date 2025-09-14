@@ -66,20 +66,17 @@ public class AICallerService {
 
         if (parts != null && parts.isArray() && parts.size() > 0) {
           String textContent = parts.get(0).get("text").asText();
-
-          // Extract JSON from markdown code blocks
           String jsonContent = extractJsonFromMarkdown(textContent);
-
           JsonNode analysisData = objectMapper.readTree(jsonContent);
 
           return Recommendation.builder()
               .activityId(activity.getId())
               .userId(activity.getUserId())
               .type(activity.getType())
-              .recommendation(analysisData.get("analysis").get("overall").asText())
-              .improvements(extractStringList(analysisData.get("improvements"), "recommendation"))
-              .suggestions(extractStringList(analysisData.get("suggestions"), "description"))
-              .safety(extractStringArray(analysisData.get("safety")))
+              .recommendation(extractRecommendation(analysisData))
+              .improvements(extractImprovements(analysisData))
+              .suggestions(extractSuggestions(analysisData))
+              .safety(extractSafety(analysisData))
               .build();
         }
       }
@@ -110,12 +107,95 @@ public class AICallerService {
     return cleaned.trim();
   }
 
+  private String extractRecommendation(JsonNode analysisData) {
+    try {
+      JsonNode analysis = analysisData.get("analysis");
+      if (analysis != null && analysis.has("overall")) {
+        String recommendation = analysis.get("overall").asText();
+        return recommendation != null && !recommendation.trim().isEmpty()
+            ? recommendation
+            : "No detailed analysis provided";
+      }
+    } catch (Exception e) {
+      log.warn("Failed to extract recommendation: {}", e.getMessage());
+    }
+    return "No detailed analysis provided";
+  }
+
+  private List<String> extractImprovements(JsonNode analysisData) {
+    try {
+      JsonNode improvements = analysisData.get("improvements");
+      List<String> result = extractStringList(improvements, "recommendation");
+
+      if (result == null || result.isEmpty()) {
+        return List.of("No improvements suggested");
+      }
+
+      // Filter out empty strings
+      List<String> filtered =
+          result.stream().filter(s -> s != null && !s.trim().isEmpty()).toList();
+
+      return filtered.isEmpty() ? List.of("No improvements suggested") : filtered;
+
+    } catch (Exception e) {
+      log.warn("Failed to extract improvements: {}", e.getMessage());
+      return List.of("No improvements suggested");
+    }
+  }
+
+  private List<String> extractSuggestions(JsonNode analysisData) {
+    try {
+      JsonNode suggestions = analysisData.get("suggestions");
+      List<String> result = extractStringList(suggestions, "description");
+
+      if (result == null || result.isEmpty()) {
+        return List.of("No workout suggestions provided");
+      }
+
+      // Filter out empty strings
+      List<String> filtered =
+          result.stream().filter(s -> s != null && !s.trim().isEmpty()).toList();
+
+      return filtered.isEmpty() ? List.of("No workout suggestions provided") : filtered;
+
+    } catch (Exception e) {
+      log.warn("Failed to extract suggestions: {}", e.getMessage());
+      return List.of("No workout suggestions provided");
+    }
+  }
+
+  private List<String> extractSafety(JsonNode analysisData) {
+    try {
+      JsonNode safety = analysisData.get("safety");
+      List<String> result = extractStringArray(safety);
+
+      if (result == null || result.isEmpty()) {
+        return List.of("Follow general safety guidelines for your activity type");
+      }
+
+      // Filter out empty strings
+      List<String> filtered =
+          result.stream().filter(s -> s != null && !s.trim().isEmpty()).toList();
+
+      return filtered.isEmpty()
+          ? List.of("Follow general safety guidelines for your activity type")
+          : filtered;
+
+    } catch (Exception e) {
+      log.warn("Failed to extract safety guidelines: {}", e.getMessage());
+      return List.of("Follow general safety guidelines for your activity type");
+    }
+  }
+
   private List<String> extractStringList(JsonNode arrayNode, String fieldName) {
     List<String> result = new ArrayList<>();
     if (arrayNode != null && arrayNode.isArray()) {
       for (JsonNode item : arrayNode) {
         if (item.has(fieldName)) {
-          result.add(item.get(fieldName).asText());
+          String value = item.get(fieldName).asText();
+          if (value != null && !value.trim().isEmpty()) {
+            result.add(value);
+          }
         }
       }
     }
@@ -126,7 +206,10 @@ public class AICallerService {
     List<String> result = new ArrayList<>();
     if (arrayNode != null && arrayNode.isArray()) {
       for (JsonNode item : arrayNode) {
-        result.add(item.asText());
+        String value = item.asText();
+        if (value != null && !value.trim().isEmpty()) {
+          result.add(value);
+        }
       }
     }
     return result;
