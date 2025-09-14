@@ -1,5 +1,6 @@
 package com.fitness.ai_service.model;
 
+import com.fitness.ai_service.dto.ActivityObjectType;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -20,7 +21,7 @@ public class Recommendation {
   @Id private String id;
   private String activityId;
   private String userId;
-  private String activityType;
+  private ActivityObjectType type;
   private String recommendation;
   private List<String> improvements;
   private List<String> suggestions;
