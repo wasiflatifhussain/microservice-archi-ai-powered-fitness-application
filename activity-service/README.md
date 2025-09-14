@@ -18,4 +18,11 @@ The Activity Service follows a layered architecture consisting of the following 
 
 ## Rabbit MQ Integration
 
-Uses Rabbit MQ to store the created activities in a queue for further processing
+Uses Rabbit MQ to store the created activities in a queue for further processing.
+When an activity is created, it is sent to a Rabbit MQ queue. As soon as the activity is in the queue, AI Service
+listens to the queue, and gets the activity. Then, it calls the Gemini API to get a response based on the activity.
+Finally, the response is stored in the database.
+
+Process Flow:
+Activity Service: /api/activities/track -> Rabbit MQ Queue -> AI Service: listens to the queue -> fetches new entry ->
+calls Gemini API -> processes response -> Database

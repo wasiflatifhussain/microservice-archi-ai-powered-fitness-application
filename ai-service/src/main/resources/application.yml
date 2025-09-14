@@ -5,6 +5,9 @@ spring:
     mongodb:
       uri: mongodb://localhost:27017/fitness-microservice-ai-service
       database: fitness-microservice-ai-service
+  output:
+    ansi:
+      enabled: ALWAYS
   rabbitmq:
     host: localhost
     port: 5672
@@ -26,3 +29,8 @@ rabbitmq:
     name: activity.queue
   routing:
     key: activity.tracking
+
+gemini:
+  api:
+    url: ${GEMINI_API_URL}
+    key: ${GEMINI_API_KEY}

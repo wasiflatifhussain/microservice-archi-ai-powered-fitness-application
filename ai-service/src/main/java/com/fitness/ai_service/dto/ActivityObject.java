@@ -8,6 +8,7 @@ import lombok.Data;
 public class ActivityObject {
   private String id;
   private String userId;
+  private ActivityObjectType type;
   private Integer duration;
   private Integer caloriesBurned;
   private LocalDateTime startTime;
