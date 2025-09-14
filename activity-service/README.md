@@ -24,5 +24,6 @@ listens to the queue, and gets the activity. Then, it calls the Gemini API to ge
 Finally, the response is stored in the database.
 
 Process Flow:
-Activity Service: /api/activities/track -> Rabbit MQ Queue -> AI Service: listens to the queue -> fetches new entry ->
+Activity Service: /api/activities/track -> check with User service if user exists -> true: Add to database -> Add to
+Rabbit MQ Queue also -> AI Service: listens to the queue -> fetches new entry ->
 calls Gemini API -> processes response -> Database

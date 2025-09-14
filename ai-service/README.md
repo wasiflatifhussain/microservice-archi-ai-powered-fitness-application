@@ -10,6 +10,11 @@ Listens to a Rabbit MQ queue for incoming requests and processes them using AI m
 Activity Service and broadcast to the Rabbit MQ queue. Then, the AI Service listens to the queue and processes the
 activities.
 
+Process Flow:
+Activity Service: /api/activities/track -> check with User service if user exists -> true: Add to database -> Add to
+Rabbit MQ Queue also -> AI Service: listens to the queue -> fetches new entry ->
+calls Gemini API -> processes response -> Database
+
 Since we are using Gemini API in Hong Kong, we need to set up a VPN connection to access the API.  
 Due to this, and due to AI cost limitations, we need to setup failure and retry mechanisms.  
 We use Retryable to handle retries in case of failures when calling the Gemini API.
