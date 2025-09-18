@@ -1,5 +1,6 @@
 package com.fitness.user_service.service;
 
+import com.fitness.user_service.client.KeycloakAdminClient;
 import com.fitness.user_service.dto.RegisterRequest;
 import com.fitness.user_service.dto.UserResponse;
 import com.fitness.user_service.model.User;
@@ -14,21 +15,29 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class UserService {
   private final UserRepository userRepository;
+  private final KeycloakAdminClient keycloakAdminClient;
 
   public UserResponse register(@Valid RegisterRequest request) {
     log.info("Starting user registration process for email={}", request.getEmail());
 
     if (userRepository.existsByEmail(request.getEmail())) {
-      log.warn("Registration failed - email already exists: email={}", request.getEmail());
-      throw new RuntimeException("Email already exists.");
+      log.error("Registration failed - email already exists: email={}", request.getEmail());
+      throw new RuntimeException("User with email already exists");
     }
+
+    String keycloakId =
+        keycloakAdminClient.createUser(
+            request.getEmail(),
+            request.getPassword(),
+            request.getFirstName(),
+            request.getLastName());
 
     User user =
         User.builder()
             .email(request.getEmail())
-            .password(request.getPassword())
             .firstName(request.getFirstName())
             .lastName(request.getLastName())
+            .keycloakId(keycloakId)
             .build();
 
     try {
@@ -40,6 +49,7 @@ public class UserService {
       return mapToUserResponse(savedUser);
     } catch (Exception e) {
       log.error("Failed to save user during registration: email={}", request.getEmail(), e);
+      keycloakAdminClient.deleteUser(keycloakId);
       throw new RuntimeException("Registration failed. Please try again.", e);
     }
   }
@@ -51,8 +61,9 @@ public class UserService {
       User user = userRepository.findById(userId).orElse(null);
 
       if (user == null) {
-        log.warn("User profile not found: userId={}", userId);
-        return null;
+        log.error("User profile not found: userId={}", userId);
+        // return an empty user
+        return new UserResponse();
       }
 
       log.info(
@@ -88,6 +99,7 @@ public class UserService {
         .lastName(user.getLastName())
         .createdAt(user.getCreatedAt())
         .updatedAt(user.getUpdatedAt())
+        .keycloakId(user.getKeycloakId())
         .build();
   }
 }
