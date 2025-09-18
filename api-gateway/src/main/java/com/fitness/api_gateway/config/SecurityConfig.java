@@ -13,7 +13,13 @@ public class SecurityConfig {
   @Bean
   public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
     return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
-        .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
+        .authorizeExchange(
+            exchange ->
+                exchange
+                    .pathMatchers("/api/users/register", "/actuator/health")
+                    .permitAll()
+                    .anyExchange()
+                    .authenticated())
         .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
         .build();
   }

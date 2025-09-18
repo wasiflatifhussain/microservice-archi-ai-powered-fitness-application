@@ -5,12 +5,14 @@ import com.fitness.user_service.dto.UserResponse;
 import com.fitness.user_service.service.UserService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/users")
 @AllArgsConstructor
+@Slf4j
 public class UserController {
 
   private final UserService userService;
@@ -21,7 +23,8 @@ public class UserController {
   }
 
   @PostMapping("/register")
-  public ResponseEntity<UserResponse> registerUser(@Valid @RequestBody RegisterRequest request) {
+  public ResponseEntity<UserResponse> registerUser(
+      @Valid @RequestBody RegisterRequest request) {
     return ResponseEntity.ok(userService.register(request));
   }
 

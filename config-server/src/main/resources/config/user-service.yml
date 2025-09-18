@@ -11,6 +11,15 @@ spring:
     ansi:
       enabled: ALWAYS
 
+keycloak:
+  admin:
+    server-url: http://localhost:8180
+    realm: fitness-oauth2
+    client-id: fitness-user-service-client
+    client-secret: ${CLIENT_SECRET}
+    grant-type: client_credentials
+
+
 server:
   port: 8081
 

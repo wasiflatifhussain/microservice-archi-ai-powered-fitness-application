@@ -1,29 +1,40 @@
 # Activity Service
 
-The Activity Service is a microservice responsible for managing user activities within an application. It provides
-functionalities to create, read, update, and delete activities, as well as to track user engagement.
-The service is built using a layered architecture to separate concerns and improve maintainability.
+> A microservice responsible for tracking user fitness activities, validating user existence, and publishing activity
+> data to a RabbitMQ exchange for asynchronous processing.
 
-## Architecture
+## Features
 
-The Activity Service follows a layered architecture consisting of the following layers:
+- **Activity Tracking**: Provides endpoints to create, retrieve, and manage user fitness activities.
+- **User Validation**: Communicates with the `user-service` to ensure that activities are tracked for valid users only.
+- **Asynchronous Publishing**: Publishes newly created activities to a RabbitMQ exchange, decoupling it from downstream
+  services like the `ai-service`.
+- **Layered Architecture**: Organized into distinct layers (Controller, Service, Repository, etc.) for improved
+  maintainability and separation of concerns.
 
-1. **Controller Layer**: Handles incoming HTTP requests and routes them to the appropriate service methods
-2. **Service Layer**: Contains the business logic for managing activities
-3. **Repository Layer**: Interacts with the database to perform CRUD operations on activity data
-4. **Model Layer**: Defines the data structures used in the application
-5. **Configuration Layer**: Manages application configuration and environment settings
-7. **Client Layer**: Provides client interfaces and implementations for external service interactions
-8. **Dto Layer**: Contains Data Transfer Objects for transferring data between layers
+## Getting Started
 
-## Rabbit MQ Integration
+### Prerequisites
 
-Uses Rabbit MQ to store the created activities in a queue for further processing.
-When an activity is created, it is sent to a Rabbit MQ queue. As soon as the activity is in the queue, AI Service
-listens to the queue, and gets the activity. Then, it calls the Gemini API to get a response based on the activity.
-Finally, the response is stored in the database.
+- Java 17+ & Maven
+- MongoDB instance running
+- RabbitMQ server running
 
-Process Flow:
-Activity Service: /api/activities/track -> check with User service if user exists -> true: Add to database -> Add to
-Rabbit MQ Queue also -> AI Service: listens to the queue -> fetches new entry ->
-calls Gemini API -> processes response -> Database
+### Running Locally
+
+1. Ensure your local MongoDB and RabbitMQ servers are running.
+2. Run the service from your IDE.
+
+## Architecture & Processing Flow
+
+The Activity Service acts as the primary entry point for activity-related data.
+
+1. A client sends a request to the `/api/activities/track` endpoint to record a new fitness activity.
+2. The `ActivityService` first communicates with the **User Service** via a REST client to validate the user ID.
+3. If the user is valid, the activity is saved to the service's MongoDB database.
+4. After saving, the new activity object is published as a message to a **RabbitMQ exchange**.
+5. Downstream services, such as the **AI Service**, can then consume this message for further processing (e.g.,
+   generating recommendations) without directly coupling to the Activity Service.
+
+This asynchronous flow ensures that the activity tracking process is fast and resilient, as it does not need to wait for
+AI analysis to complete.
