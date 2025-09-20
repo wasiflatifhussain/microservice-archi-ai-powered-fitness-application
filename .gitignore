@@ -49,3 +49,9 @@ yarn-error.log*
 
 # Optional: if you don’t want to commit local configs
 application-*.yml
+
+
+# Ignore all shell scripts
+*.sh
+dev-up.sh
+dev-down.sh
