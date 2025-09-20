@@ -4,7 +4,6 @@ import { initKeycloak } from "./keycloak";
 
 interface AuthState {
   isAuthenticated: boolean | null;
-  token: string | null;
   loading: boolean;
   error: string | null;
   registrationSuccess: boolean;
@@ -13,7 +12,6 @@ interface AuthState {
 
 const initialState: AuthState = {
   isAuthenticated: null,
-  token: null,
   loading: false,
   error: null,
   registrationSuccess: false,
@@ -24,7 +22,7 @@ export const bootstrapAuth = createAsyncThunk(
   "auth/bootstrapAuth",
   async (_, { rejectWithValue }) => {
     try {
-      const isAuthenticated = await initKeycloak(); // returns true/false
+      const isAuthenticated = await initKeycloak();
       return isAuthenticated;
     } catch (error) {
       console.error("Bootstrap auth failed:", error);
@@ -74,18 +72,20 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setAuth(state, action: PayloadAction<{ token: string }>) {
-      state.isAuthenticated = true;
-      state.token = action.payload.token;
+    setAuthenticated(state, action: PayloadAction<boolean>) {
+      state.isAuthenticated = action.payload;
       state.error = null;
     },
     clearAuth(state) {
       state.isAuthenticated = false;
-      state.token = null;
       state.error = null;
     },
+    setAuthError(state, action: PayloadAction<string>) {
+      state.error = action.payload;
+      state.isAuthenticated = false;
+    },
     setLoading(state, action: PayloadAction<boolean>) {
-      state.loading = action.payload; // used by registration form only
+      state.loading = action.payload;
     },
     resetRegistrationState(state) {
       state.registrationSuccess = false;
@@ -109,8 +109,7 @@ const authSlice = createSlice({
         state.error = action.payload as string;
       })
       .addCase(bootstrapAuth.fulfilled, (state, action) => {
-        state.isAuthenticated = !!action.payload;
-        if (action.payload) state.token = "authenticated";
+        state.isAuthenticated = Boolean(action.payload);
         state.bootstrapped = true;
       })
       .addCase(bootstrapAuth.rejected, (state) => {
@@ -120,6 +119,12 @@ const authSlice = createSlice({
   },
 });
 
-export const { setAuth, clearAuth, setLoading, resetRegistrationState } =
-  authSlice.actions;
+export const {
+  setAuthenticated,
+  clearAuth,
+  setAuthError,
+  setLoading,
+  resetRegistrationState,
+} = authSlice.actions;
+
 export default authSlice.reducer;

@@ -54,38 +54,38 @@ public class UserService {
     }
   }
 
-  public UserResponse getUserProfile(String userId) {
-    log.info("Retrieving user profile for userId={}", userId);
+  public UserResponse getUserProfile(String keycloakId) {
+    log.info("Retrieving user profile for keycloakId={}", keycloakId);
 
     try {
-      User user = userRepository.findById(userId).orElse(null);
+      User user = userRepository.findByKeycloakId(keycloakId).orElse(null);
 
       if (user == null) {
-        log.error("User profile not found: userId={}", userId);
+        log.error("User profile not found: keycloakId={}", keycloakId);
         // return an empty user
         return new UserResponse();
       }
 
       log.info(
-          "Successfully retrieved user profile: userId={}, email={}",
+          "Successfully retrieved user profile: keycloakId={}, email={}",
           user.getId(),
           user.getEmail());
       return mapToUserResponse(user);
     } catch (Exception e) {
-      log.error("Database error retrieving user profile: userId={}", userId, e);
+      log.error("Database error retrieving user profile: keycloakId={}", keycloakId, e);
       throw new RuntimeException("Failed to retrieve user profile due to system error", e);
     }
   }
 
-  public Boolean existByUserId(String userId) {
-    log.info("Checking if user exists: userId={}", userId);
+  public Boolean existByKeycloakId(String keycloakId) {
+    log.info("Checking if user exists: keycloakId={}", keycloakId);
 
     try {
-      Boolean exists = userRepository.existsById(userId);
-      log.info("User existence check result: userId={}, exists={}", userId, exists);
+      Boolean exists = userRepository.existsByKeycloakId(keycloakId);
+      log.info("User existence check result: keycloakId={}, exists={}", keycloakId, exists);
       return exists;
     } catch (Exception e) {
-      log.error("Error checking user existence: userId={}", userId, e);
+      log.error("Error checking user existence: keycloakId={}", keycloakId, e);
       return false;
     }
   }

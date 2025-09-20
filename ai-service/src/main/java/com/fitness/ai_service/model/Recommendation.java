@@ -20,7 +20,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Recommendation {
   @Id private String id;
   private String activityId;
-  private String userId;
+  private String keycloakId;
   private ActivityObjectType type;
   private String recommendation;
   private List<String> improvements;

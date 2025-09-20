@@ -12,10 +12,11 @@ export interface AdditionalMetrics {
   laps?: number;
   poolLength?: number;
   avgStrokeRate?: number;
+  [key: string]: any; // Allow any additional properties
 }
 
 export interface ActivityTrackRequest {
-  userId: string;
+  keycloakId: string; // Changed from userId
   activityType: ActivityType; // request uses activityType
   duration: number;
   caloriesBurned: number;
@@ -25,7 +26,7 @@ export interface ActivityTrackRequest {
 
 export interface ActivityResponse {
   id: string;
-  userId: string;
+  keycloakId: string; // Changed from userId
   type: ActivityType; // response uses "type"
   duration: number;
   caloriesBurned: number;

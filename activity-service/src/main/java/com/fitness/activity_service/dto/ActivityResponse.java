@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ActivityResponse {
   private String id;
-  private String userId;
+  private String keycloakId;
   private ActivityType type;
   private Integer duration;
   private Integer caloriesBurned;

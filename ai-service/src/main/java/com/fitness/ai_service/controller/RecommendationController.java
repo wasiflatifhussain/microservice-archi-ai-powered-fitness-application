@@ -18,9 +18,10 @@ public class RecommendationController {
   private final RecommendationService recommendationService;
   private final GeminiClient geminiClient;
 
-  @GetMapping("/getUserRecommendations/{userId}")
-  public ResponseEntity<List<Recommendation>> getUserRecommendations(@PathVariable String userId) {
-    List<Recommendation> recommendations = recommendationService.getUserRecommendations(userId);
+  @GetMapping("/getUserRecommendations/{keycloakId}")
+  public ResponseEntity<List<Recommendation>> getUserRecommendations(
+      @PathVariable String keycloakId) {
+    List<Recommendation> recommendations = recommendationService.getUserRecommendations(keycloakId);
     return ResponseEntity.ok(recommendations);
   }
 

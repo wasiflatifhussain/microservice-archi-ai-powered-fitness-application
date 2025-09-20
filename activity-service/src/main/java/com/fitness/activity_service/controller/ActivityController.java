@@ -28,7 +28,7 @@ public class ActivityController {
 
   @GetMapping("/getUserActivities")
   public ResponseEntity<List<ActivityResponse>> getUserActivities(
-      @RequestHeader("X-User-Id") String userId) {
-    return ResponseEntity.ok(activityService.getActivitiesByUserId(userId));
+      @RequestHeader("X-Keycloak-Id") String keycloakId) {
+    return ResponseEntity.ok(activityService.getActivitiesByKeycloakId(keycloakId));
   }
 }

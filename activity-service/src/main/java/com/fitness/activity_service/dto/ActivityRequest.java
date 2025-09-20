@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ActivityRequest {
-  private String userId;
+  private String keycloakId;
   private ActivityType activityType;
   private Integer duration;
   private Integer caloriesBurned;

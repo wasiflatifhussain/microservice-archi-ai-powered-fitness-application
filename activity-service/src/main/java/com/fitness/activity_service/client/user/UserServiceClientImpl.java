@@ -14,13 +14,13 @@ public class UserServiceClientImpl implements UserServiceClient {
   private final WebClient userServiceWebClient;
 
   @Override
-  public Mono<Boolean> validateUser(String userId) {
+  public Mono<Boolean> validateUser(String keycloakId) {
     log.info("Entering validateUser method in UserServiceClientAdapter");
     try {
-      log.info("Validating user with ID: " + userId);
+      log.info("Validating user with ID: " + keycloakId);
       return userServiceWebClient
           .get()
-          .uri("/api/users/{userId}/validate", userId)
+          .uri("/api/users/{keycloakId}/validate", keycloakId)
           .retrieve()
           .bodyToMono(Boolean.class)
           .onErrorReturn(false);

@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ActivityRepository extends MongoRepository<Activity, String> {
-  List<Activity> findByUserId(String userId);
+  List<Activity> findByKeycloakId(String userId);
 }
