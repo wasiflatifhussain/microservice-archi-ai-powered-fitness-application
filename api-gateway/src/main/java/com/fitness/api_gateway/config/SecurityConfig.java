@@ -2,6 +2,7 @@ package com.fitness.api_gateway.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
@@ -16,6 +17,8 @@ public class SecurityConfig {
         .authorizeExchange(
             exchange ->
                 exchange
+                    .pathMatchers(HttpMethod.OPTIONS, "/**")
+                    .permitAll() // Allow all OPTIONS requests
                     .pathMatchers("/api/users/register", "/actuator/health")
                     .permitAll()
                     .anyExchange()

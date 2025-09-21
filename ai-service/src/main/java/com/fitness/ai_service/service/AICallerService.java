@@ -71,7 +71,7 @@ public class AICallerService {
 
           return Recommendation.builder()
               .activityId(activity.getId())
-              .userId(activity.getUserId())
+              .keycloakId(activity.getKeycloakId())
               .type(activity.getType())
               .recommendation(extractRecommendation(analysisData))
               .improvements(extractImprovements(analysisData))

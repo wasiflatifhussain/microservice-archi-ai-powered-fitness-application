@@ -18,7 +18,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 public class User {
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
-  private String id;
+  private String id; // NOTE: for loose-coupling and future scalability
 
   private String keycloakId;
 

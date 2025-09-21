@@ -29,18 +29,19 @@ public class ActivityService {
   private String routingKey;
 
   public ActivityResponse trackActivity(ActivityRequest activityRequest) {
-    log.info("trackActivity called for userId={}", activityRequest.getUserId());
+    log.info("trackActivity called for user with keycloakId={}", activityRequest.getKeycloakId());
     try {
-      Boolean userExists = userServiceClient.validateUser(activityRequest.getUserId()).block();
+      Boolean userExists = userServiceClient.validateUser(activityRequest.getKeycloakId()).block();
       if (userExists == null || !userExists) {
-        log.error("User validation failed for userId={}", activityRequest.getUserId());
+        log.error(
+            "User validation failed for user with keycloakId={}", activityRequest.getKeycloakId());
         return null;
       }
-      log.info("User validated successfully for userId={}", activityRequest.getUserId());
+      log.info("User validated successfully for keycloakId={}", activityRequest.getKeycloakId());
 
       Activity activity =
           Activity.builder()
-              .userId(activityRequest.getUserId())
+              .keycloakId(activityRequest.getKeycloakId())
               .type(activityRequest.getActivityType())
               .duration(activityRequest.getDuration())
               .caloriesBurned(activityRequest.getCaloriesBurned())
@@ -61,7 +62,9 @@ public class ActivityService {
       return mapToActivityResponse(savedActivity);
     } catch (Exception e) {
       log.error(
-          "Error occurred while tracking activity for userId={}", activityRequest.getUserId(), e);
+          "Error occurred while tracking activity for user with keycloakId={}",
+          activityRequest.getKeycloakId(),
+          e);
       throw e;
     }
   }
@@ -82,26 +85,26 @@ public class ActivityService {
     }
   }
 
-  public List<ActivityResponse> getActivitiesByUserId(String userId) {
-    log.info("getActivitiesByUserId called for userId={}", userId);
+  public List<ActivityResponse> getActivitiesByKeycloakId(String keycloakId) {
+    log.info("getActivitiesByUserId called for keycloakId={}", keycloakId);
     try {
-      Boolean userExists = userServiceClient.validateUser(userId).block();
+      Boolean userExists = userServiceClient.validateUser(keycloakId).block();
       if (userExists == null || !userExists) {
-        log.warn("User validation failed for userId={}", userId);
+        log.warn("User validation failed for user with keycloakId={}", keycloakId);
         return null; // Return null for invalid user
       }
-      log.info("User validated successfully for userId={}", userId);
+      log.info("User validated successfully for keycloakId={}", keycloakId);
 
-      List<Activity> activities = activityRepository.findByUserId(userId);
+      List<Activity> activities = activityRepository.findByKeycloakId(keycloakId);
       if (activities.isEmpty()) {
-        log.warn("No activities found for userId={}", userId);
+        log.warn("No activities found for user with keycloakId={}", keycloakId);
         return List.of();
       }
 
-      log.info("Found {} activities for userId={}", activities.size(), userId);
+      log.info("Found {} activities for user with keycloakId={}", activities.size(), keycloakId);
       return activities.stream().map(this::mapToActivityResponse).collect(Collectors.toList());
     } catch (Exception e) {
-      log.error("System error while getting activities for userId={}", userId, e);
+      log.error("System error while getting activities for user with keycloakId={}", keycloakId, e);
       throw e;
     }
   }
@@ -109,7 +112,7 @@ public class ActivityService {
   private ActivityResponse mapToActivityResponse(Activity activity) {
     return ActivityResponse.builder()
         .id(activity.getId())
-        .userId(activity.getUserId())
+        .keycloakId(activity.getKeycloakId())
         .type(activity.getType())
         .duration(activity.getDuration())
         .caloriesBurned(activity.getCaloriesBurned())

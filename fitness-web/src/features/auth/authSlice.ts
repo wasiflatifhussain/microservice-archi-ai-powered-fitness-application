@@ -1,10 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { initKeycloak } from "./keycloak";
+import { publicApi } from "../../utils/api";
 
 interface AuthState {
   isAuthenticated: boolean | null;
-  token: string | null;
   loading: boolean;
   error: string | null;
   registrationSuccess: boolean;
@@ -13,7 +13,6 @@ interface AuthState {
 
 const initialState: AuthState = {
   isAuthenticated: null,
-  token: null,
   loading: false,
   error: null,
   registrationSuccess: false,
@@ -24,7 +23,7 @@ export const bootstrapAuth = createAsyncThunk(
   "auth/bootstrapAuth",
   async (_, { rejectWithValue }) => {
     try {
-      const isAuthenticated = await initKeycloak(); // returns true/false
+      const isAuthenticated = await initKeycloak();
       return isAuthenticated;
     } catch (error) {
       console.error("Bootstrap auth failed:", error);
@@ -45,27 +44,15 @@ export const registerUser = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const apiBaseUrl =
-        import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
-      const response = await fetch(`${apiBaseUrl}/api/users/register`, {
+      return await publicApi("/api/users/register", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(userData),
+        body: userData,
       });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({
-          message: `Registration failed with status ${response.status}`,
-        }));
-        return rejectWithValue(errorData.message || "Registration failed");
-      }
-
-      return await response.json();
     } catch (error) {
       console.error("Registration error:", error);
-      return rejectWithValue("Network error occurred");
+      const message =
+        error instanceof Error ? error.message : "Network error occurred";
+      return rejectWithValue(message);
     }
   }
 );
@@ -74,18 +61,20 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setAuth(state, action: PayloadAction<{ token: string }>) {
-      state.isAuthenticated = true;
-      state.token = action.payload.token;
+    setAuthenticated(state, action: PayloadAction<boolean>) {
+      state.isAuthenticated = action.payload;
       state.error = null;
     },
     clearAuth(state) {
       state.isAuthenticated = false;
-      state.token = null;
       state.error = null;
     },
+    setAuthError(state, action: PayloadAction<string>) {
+      state.error = action.payload;
+      state.isAuthenticated = false;
+    },
     setLoading(state, action: PayloadAction<boolean>) {
-      state.loading = action.payload; // used by registration form only
+      state.loading = action.payload;
     },
     resetRegistrationState(state) {
       state.registrationSuccess = false;
@@ -109,8 +98,7 @@ const authSlice = createSlice({
         state.error = action.payload as string;
       })
       .addCase(bootstrapAuth.fulfilled, (state, action) => {
-        state.isAuthenticated = !!action.payload;
-        if (action.payload) state.token = "authenticated";
+        state.isAuthenticated = Boolean(action.payload);
         state.bootstrapped = true;
       })
       .addCase(bootstrapAuth.rejected, (state) => {
@@ -120,6 +108,12 @@ const authSlice = createSlice({
   },
 });
 
-export const { setAuth, clearAuth, setLoading, resetRegistrationState } =
-  authSlice.actions;
+export const {
+  setAuthenticated,
+  clearAuth,
+  setAuthError,
+  setLoading,
+  resetRegistrationState,
+} = authSlice.actions;
+
 export default authSlice.reducer;

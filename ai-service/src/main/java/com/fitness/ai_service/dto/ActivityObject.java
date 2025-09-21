@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class ActivityObject {
   private String id;
-  private String userId;
+  private String keycloakId;
   private ActivityObjectType type;
   private Integer duration;
   private Integer caloriesBurned;

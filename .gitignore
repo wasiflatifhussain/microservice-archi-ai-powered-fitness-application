@@ -55,3 +55,41 @@ application-*.yml
 *.sh
 dev-up.sh
 dev-down.sh
+
+
+# Secrets and keys
+*.pem
+*.key
+*.p12
+*.jks
+*.crt
+*.der
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+
+# AWS / cloud / docker / kube
+.aws/
+.aws-credentials
+.gcloud/
+kubeconfig
+.kube/
+.docker/
+.docker/config.json
+
+# npm / yarn / registry auth
+.npmrc
+.yarnrc
+.netrc
+
+# secret formats and backups
+secrets.yml
+secret*.*
+credentials.*
+*.secret
+*.env.*
+!.env.example
+
+# local IDE / OS credential stores
+.vscode/.secret*

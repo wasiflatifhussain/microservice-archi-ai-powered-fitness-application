@@ -19,7 +19,6 @@ const router = createBrowserRouter([
   },
 ]);
 
-// Component definition with explicit typing
 const AppRouter: React.FC = () => {
   return <RouterProvider router={router} />;
 };

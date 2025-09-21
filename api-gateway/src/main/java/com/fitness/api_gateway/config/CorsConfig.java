@@ -11,16 +11,15 @@ public class CorsConfig {
 
   @Bean
   public CorsWebFilter corsWebFilter() {
-    CorsConfiguration corsConfiguration = new CorsConfiguration();
-    corsConfiguration.addAllowedOrigin("http://localhost:5173"); // React dev server
-    corsConfiguration.addAllowedOrigin("http://localhost:3000"); // Alternative React port
-    corsConfiguration.addAllowedMethod("*");
-    corsConfiguration.addAllowedHeader("*");
-    corsConfiguration.setAllowCredentials(true);
-    corsConfiguration.setMaxAge(3600L);
+    CorsConfiguration corsConfig = new CorsConfiguration();
+    corsConfig.setAllowCredentials(true);
+    corsConfig.addAllowedOrigin("http://localhost:5173");
+    corsConfig.addAllowedHeader("*");
+    corsConfig.addAllowedMethod("*");
+    corsConfig.setMaxAge(3600L);
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", corsConfiguration);
+    source.registerCorsConfiguration("/**", corsConfig); // Make sure it's /**
 
     return new CorsWebFilter(source);
   }

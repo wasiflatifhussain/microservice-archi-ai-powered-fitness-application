@@ -13,17 +13,17 @@ import org.springframework.stereotype.Service;
 public class RecommendationService {
   private final RecommendationRepository recommendationRepository;
 
-  public List<Recommendation> getUserRecommendations(String userId) {
-    log.info("getUserRecommendations called for userId={}", userId);
+  public List<Recommendation> getUserRecommendations(String keycloakId) {
+    log.info("getUserRecommendations called for keycloakId={}", keycloakId);
     try {
-      List<Recommendation> recommendations = recommendationRepository.findByUserId(userId);
+      List<Recommendation> recommendations = recommendationRepository.findByKeycloakId(keycloakId);
       log.info(
-          "Found {} recommendations for userId={}",
+          "Found {} recommendations for keycloakId={}",
           recommendations != null ? recommendations.size() : 0,
-          userId);
+          keycloakId);
       return recommendations != null ? recommendations : List.of();
     } catch (Exception e) {
-      log.error("Database error while fetching recommendations for userId={}", userId, e);
+      log.error("Database error while fetching recommendations for keycloakId={}", keycloakId, e);
       throw new RuntimeException("Failed to fetch recommendations due to system error", e);
     }
   }
@@ -31,7 +31,13 @@ public class RecommendationService {
   public Recommendation getActivityRecommendations(String activityId) {
     log.info("getActivityRecommendations called for activityId={}", activityId);
     try {
-      return recommendationRepository.findByActivityId(activityId).orElse(null);
+      Recommendation recommendation =
+          recommendationRepository.findByActivityId(activityId).orElse(null);
+      if (recommendation != null) {
+        log.info("Found recommendation for activityId={}", activityId);
+        return recommendation;
+      }
+      return null;
     } catch (Exception e) {
       log.error("Database error while fetching recommendations for activityId={}", activityId, e);
       throw new RuntimeException("Failed to fetch activity recommendations due to system error", e);

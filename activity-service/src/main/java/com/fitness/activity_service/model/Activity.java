@@ -19,7 +19,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @NoArgsConstructor
 public class Activity {
   @Id private String id;
-  private String userId;
+  private String keycloakId;
   private ActivityType type;
   private Integer duration;
   private Integer caloriesBurned;
