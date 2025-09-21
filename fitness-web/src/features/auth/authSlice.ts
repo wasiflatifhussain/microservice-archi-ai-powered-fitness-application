@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { initKeycloak } from "./keycloak";
+import { publicApi } from "../../utils/api";
 
 interface AuthState {
   isAuthenticated: boolean | null;
@@ -43,27 +44,15 @@ export const registerUser = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const apiBaseUrl =
-        import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
-      const response = await fetch(`${apiBaseUrl}/api/users/register`, {
+      return await publicApi("/api/users/register", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(userData),
+        body: userData,
       });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({
-          message: `Registration failed with status ${response.status}`,
-        }));
-        return rejectWithValue(errorData.message || "Registration failed");
-      }
-
-      return await response.json();
     } catch (error) {
       console.error("Registration error:", error);
-      return rejectWithValue("Network error occurred");
+      const message =
+        error instanceof Error ? error.message : "Network error occurred";
+      return rejectWithValue(message);
     }
   }
 );

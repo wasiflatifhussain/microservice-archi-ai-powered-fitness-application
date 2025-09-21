@@ -9,15 +9,12 @@ export type ActivityType =
   | "OTHER";
 
 export interface AdditionalMetrics {
-  laps?: number;
-  poolLength?: number;
-  avgStrokeRate?: number;
-  [key: string]: any; // Allow any additional properties
+  [key: string]: any;
 }
 
 export interface ActivityTrackRequest {
-  keycloakId: string; // Changed from userId
-  activityType: ActivityType; // request uses activityType
+  keycloakId: string;
+  activityType: ActivityType;
   duration: number;
   caloriesBurned: number;
   startTime: string; // "YYYY-MM-DDTHH:mm:ss"
@@ -26,12 +23,30 @@ export interface ActivityTrackRequest {
 
 export interface ActivityResponse {
   id: string;
-  keycloakId: string; // Changed from userId
-  type: ActivityType; // response uses "type"
+  keycloakId: string;
+  type: ActivityType;
   duration: number;
   caloriesBurned: number;
   startTime: string;
   additionalMetrics: AdditionalMetrics;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface Recommendation {
+  id: string;
+  activityId: string;
+  keycloakId: string;
+  type: string;
+  recommendation: string;
+  improvements: string[];
+  suggestions: string[];
+  safety: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ActivityWithRecommendation extends ActivityResponse {
+  recommendation?: Recommendation;
+  recommendationStatus: "loading" | "available" | "unavailable";
 }

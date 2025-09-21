@@ -17,7 +17,6 @@ const Protected: React.FC<ProtectedProps> = ({
   );
   const dispatch = useAppDispatch();
 
-  // Prevent double bootstrap in React 18 StrictMode (dev)
   const didInit = useRef<boolean>(false);
 
   useEffect(() => {
@@ -27,17 +26,14 @@ const Protected: React.FC<ProtectedProps> = ({
     dispatch(bootstrapAuth());
   }, [dispatch]);
 
-  // Show loading while checking authentication
   if (!bootstrapped) {
     return <LoadingSpinner message="Checking session…" />;
   }
 
-  // Show fallback component for unauthenticated users
   if (!isAuthenticated) {
     return <>{fallback}</>;
   }
 
-  // Render protected content for authenticated users
   return <>{children}</>;
 };
 

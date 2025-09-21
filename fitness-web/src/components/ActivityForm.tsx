@@ -1,11 +1,15 @@
 import React, { useState, useCallback } from "react";
-import { useAuthenticatedApi } from "../hooks/useApi";
-import { getCurrentKeycloakId } from "../features/auth/keycloak";
+import {
+  ensureTokenValid,
+  getCurrentKeycloakId,
+  keycloak,
+} from "../features/auth/keycloak";
 import type {
   ActivityType,
   ActivityTrackRequest,
   ActivityResponse,
 } from "../types/activity";
+import { authenticatedApi } from "../utils/api";
 
 interface ActivityFormData {
   activityType: ActivityType;
@@ -34,9 +38,11 @@ const INITIAL_FORM_DATA: ActivityFormData = {
   additionalMetrics: "{}",
 };
 
-const ActivityForm: React.FC = () => {
-  const authenticatedApi = useAuthenticatedApi();
+interface ActivityFormProps {
+  onActivityAdded: () => void;
+}
 
+const ActivityForm: React.FC<ActivityFormProps> = ({ onActivityAdded }) => {
   const [formData, setFormData] = useState<ActivityFormData>(INITIAL_FORM_DATA);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -51,32 +57,34 @@ const ActivityForm: React.FC = () => {
     setFormData(INITIAL_FORM_DATA);
   }, []);
 
-  const parseMetrics = (metricsString: string) => {
+  const parseMetrics = useCallback((metricsString: string) => {
     const trimmed = metricsString.trim() || "{}";
-    if (!trimmed) return {};
 
     try {
       return JSON.parse(trimmed);
     } catch (error) {
-      throw new Error("Invalid JSON format in Additional Metrics: " + error);
+      throw new Error(`Invalid JSON format in Additional Metrics: ${error}`);
     }
-  };
+  }, []);
 
-  const buildRequestData = (parsedMetrics: object): ActivityTrackRequest => {
-    const keycloakId = getCurrentKeycloakId();
-    if (!keycloakId) {
-      throw new Error("Unable to get Keycloak ID from token");
-    }
+  const buildRequestData = useCallback(
+    (parsedMetrics: object): ActivityTrackRequest => {
+      const keycloakId = getCurrentKeycloakId();
+      if (!keycloakId) {
+        throw new Error("Unable to get Keycloak ID from token");
+      }
 
-    return {
-      keycloakId,
-      activityType: formData.activityType,
-      duration: formData.duration,
-      caloriesBurned: formData.caloriesBurned,
-      startTime: formData.startTime,
-      additionalMetrics: parsedMetrics,
-    };
-  };
+      return {
+        keycloakId,
+        activityType: formData.activityType,
+        duration: formData.duration,
+        caloriesBurned: formData.caloriesBurned,
+        startTime: formData.startTime,
+        additionalMetrics: parsedMetrics,
+      };
+    },
+    [formData]
+  );
 
   const handleInputChange = useCallback(
     (
@@ -99,7 +107,7 @@ const ActivityForm: React.FC = () => {
           return { ...prev, [name]: Number(value) || 0 };
         }
 
-        return { ...prev, [name]: value };
+        return prev;
       });
     },
     []
@@ -112,13 +120,22 @@ const ActivityForm: React.FC = () => {
       resetMessages();
 
       try {
+        const isTokenValid = await ensureTokenValid();
+        if (!isTokenValid) {
+          throw new Error("Authentication required. Please log in again.");
+        }
+
+        const token = keycloak.token;
+        if (!token) {
+          throw new Error("No access token available");
+        }
+
         const parsedMetrics = parseMetrics(formData.additionalMetrics);
         const requestData = buildRequestData(parsedMetrics);
 
-        console.log("Request payload:", requestData);
-
         const response = await authenticatedApi<ActivityResponse>(
           "/api/activities/track",
+          token,
           {
             method: "POST",
             body: requestData,
@@ -130,19 +147,22 @@ const ActivityForm: React.FC = () => {
             `Activity tracked successfully! ID: ${response.id}`
           );
           resetForm();
+          onActivityAdded();
         } else {
           setErrorMessage("Activity tracking failed. Please try again.");
         }
       } catch (error) {
-        console.error("API Error:", error);
+        console.error("Activity tracking failed:", error);
         const message =
-          error instanceof Error ? error.message : "An error occurred";
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred";
         setErrorMessage(message);
       } finally {
         setIsSubmitting(false);
       }
     },
-    [formData, authenticatedApi, resetForm, resetMessages]
+    [formData, resetForm, resetMessages, onActivityAdded]
   );
 
   const formatActivityType = (type: ActivityType): string => {
@@ -255,7 +275,8 @@ const ActivityForm: React.FC = () => {
             placeholder='{"laps": 20, "poolLength": 25, "avgStrokeRate": 32}'
           />
           <p className="text-xs text-gray-500 mt-1">
-            Enter JSON format: {"{"}"key": "value", "key2": "value2"{"}"}
+            Enter any metrics as JSON: {"{"}"distance": "5km", "avgPace":
+            "6:30", "heartRate": 150{"}"}
           </p>
         </div>
 
